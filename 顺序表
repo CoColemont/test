@@ -1,0 +1,294 @@
+// # include "stdafx.h"
+# include <stdio.h>
+# include <stdlib.h>
+#include <stdbool.h> // C语言本身没有bool类型
+
+# define LIST_ININ_SIZE 100 // 线性表存储空间的初始分配量
+# define LIST_INCREASMENT 10 // 线性表存储空间的分配增量
+# define FALSE 0
+# define TRUE 1
+# define ERROR 0
+# define OK 1
+#define OVERFLOW -2
+
+typedef int ElemType;  // //定义的数据元素的类型,之所以设置为ElemType是考虑到可扩展行的原因,如果想把数据元素的类型修改成其他的话,只需要在这里修改一次据好了,比较方便
+typedef int Status;
+
+
+/*
+定义线性表的数据结构:动态分配
+*/
+typedef struct
+{
+	ElemType *base;  // base为线性表指向线性表起始地址的指针
+	int length;      // 当前长度
+	int listSize;	 // 当前分配得存储容量
+}SqList;
+
+/*
+关于创建的结构体变量什么时候用. 什么时候用->
+SqList *L 建立的指针结构体变量，这时用L->length
+SqList L 建立的是结构体变量， 这时用L.length
+*/
+
+// 创建顺序表
+void initList(SqList *L)
+{
+	L->listSize = LIST_ININ_SIZE;  // 初始化线性表的总长度为我们事先定义好的LIST_INIT_SIZE,也就是100
+	L->base = (ElemType*)malloc(L->listSize * sizeof(ElemType));  //为线性表申请内存空间,大小为线性表的总长度 乘以 每一个元素所占空间的大小
+	L->length = 0;  // 创建线性表的时候没有数据，长度默认为0
+
+}
+
+
+// 判断顺序表是否为空
+bool listEmty(SqList *L)
+{
+	return L->length == 0;
+}
+
+
+// 得到线性表的长度
+int listLength(SqList *L)
+{
+	if (L->length >= 0 && L->length <= L->listSize)
+	{
+		return L->length;
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+
+// 线性表的插入操作
+Status listInsert(SqList *L, int i, ElemType e)
+{
+	//我们这里传入的i是用户眼中的位置,意思就是从1开始,而不是从程序员熟悉的0开始
+
+	//在顺序线性表L中第i个位置之前插入新的元素e
+	//i的合法值为1=<i<=Length+1
+	if (i<1 || i>L->length + 1)
+	{
+		return ERROR;  //i值不合法
+	}
+	if (L->length >= L->listSize)  //当前存储空间已满，增加分配
+	{
+		L->base = (ElemType *)realloc(L->base, (L->listSize + LIST_INCREASMENT) * sizeof(ElemType));
+		if (!L->base) {
+			return OVERFLOW;//存储分配失败
+		}
+		L->listSize += LIST_INCREASMENT;//增加存储容量
+	}
+
+	//插入操作，需要将从插入位置开始的后续元素，逐个后移
+	for (int j = L->length - 1; j >= i - 1; j--) {
+		L->base[j + 1] = L->base[j];
+	}
+	L->base[i - 1] = e;//插入e
+	L->length++;//表长增1
+	return OK;
+	
+}
+
+
+//删除表中的元素
+Status listDelete(SqList *L, int i, ElemType *e)
+{
+	// 这里的e是用来暂存被删除的元素的
+	int k;
+	
+	if (L->length == 0)  // 如果表为空
+	{
+		return ERROR;
+	}
+	if (i < 1 || i >L->length)  // 如果删除的位置不正确
+	{
+		return ERROR;
+	}
+
+	*e = L->base[i - 1];  // 这里把传进来的e地址所对应的值改变了
+	if (i < L->length)
+	{
+		for (k = i; k < L->length; k++)
+		{
+			L->base[k - 1] = L->base[k];
+		}
+	}
+	L->length = L->length - 1;
+
+	return OK;
+}
+
+
+// 得到指定位置的元素的值
+ElemType getElem(SqList *L, int i)
+{
+	if (i < 1 || i > L->length)
+	{
+		return ERROR;
+	}
+	return L->base[i - 1];  // 直接查找值并返回
+}
+
+
+// 得到指定位置元素的前驱
+ElemType priorElem(SqList *L, int i)
+{
+	if (i < 1 || i > L->length)
+	{
+		return ERROR;
+	}
+	if (i != 1)
+	{
+		return L->base[i - 2];
+	}
+	else
+	{
+		printf("顺序表的第一个元素没有前驱，操作错误！");
+		return ERROR;
+	}
+}
+
+
+// 得到指定元素的后继
+ElemType nextElem(SqList *L, int i)
+{
+	if (i < 1 || i > L->length)
+	{
+		return ERROR;
+	}
+	if (i != L->length)
+	{
+		return L->base[i];
+	}
+	else
+	{
+		printf("顺序表的最后一个节点没有后继，操作错误！");
+		return ERROR;
+	}
+
+}
+
+
+// 清空线性表
+bool clearList(SqList *L)
+{
+	if (L->length > 0 && L->length < L->listSize)
+	{
+		L->length = 0;
+		return OK;
+	}
+	else
+	{
+		return ERROR;
+	}
+}
+
+
+// 销毁顺序表
+Status destoryList(SqList *L)
+{
+	clearList(L);    // 先清空顺序表
+	L->listSize = 0; // 把顺序表的总长度归零
+	free(L->base);   // 释放内存空间
+
+	if (L->base == NULL && L->length == 0 && L->listSize == 0)
+	{
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
+	}
+
+}
+
+
+// 遍历当前线性表， 打印输出所有的元素
+void printList(SqList *L)
+{
+	int i = 0;
+
+	for (; i < L->length; i++)
+	{
+		printf("%d\n", L->base[i]);
+	}
+
+	printf("打印完毕.\n");
+}
+
+
+// 定位一个指定的值在线性表里的具体位置
+int localElem(SqList *L, int e)
+{
+	int i;
+	for (i = 0; i < L->length; i++)
+	{
+		if (L->base[i] == e)
+		{
+			return i + 1;
+		}
+	}
+	return 0;
+}
+
+
+int main()
+{
+	ElemType e;
+	SqList L;
+	initList(&L);
+	printf("创建顺序表后\n顺序表的当前长度为：%d", L.length);
+	printf("\n线性表的总长度:%d", L.listSize);
+	
+	// 判断表是否为空
+	if (listEmty(&L))
+	{
+		printf("\n此时顺序表为空");
+	}
+	else
+	{
+		printf("\n此时顺序表不为空");
+	}
+
+	//插入一个元素
+	if (listInsert(&L, 1, 100))
+	{
+		listInsert(&L, 2, 200);
+		listInsert(&L, 3, 300);
+		listInsert(&L, 4, 400);
+		listInsert(&L, 5, 500);
+		listInsert(&L, 2, 600);
+
+		printf("\n插入第一个结点的值：%d\n", getElem(&L, 2));
+	}
+
+	printf("\n线性表的当前长度:%d\n", L.length);
+
+	printList(&L);
+
+	printf("\n第二个元素的前驱是:%d\n", priorElem(&L, 2));
+	printf("\n第二个元素的后继是:%d\n", nextElem(&L, 2));
+
+	if (listDelete(&L, 2, &e))
+	{
+		printf("\n被删除的元素的值:%d", e);
+	}
+
+	printf("\n线性表的当前长度:%d\n", listLength(&L));
+
+	printList(&L);
+
+	printf("300所在的位置：%d", localElem(&L, 300));
+
+	clearList(&L);
+	printf("\n线性表的当前长度:%d\n", listLength(&L));
+
+	destoryList(&L);
+	printf("\n线性表的当前长度:%d\n", listLength(&L));
+
+	system("pause");
+	return 0;
+}
