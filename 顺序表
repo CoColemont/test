@@ -20,7 +20,7 @@ typedef int Status;
 */
 typedef struct
 {
-	ElemType *base;  // base为线性表指向线性表起始地址的指针
+	ElemType *data;  // data为线性表指向线性表起始地址的指针
 	int length;      // 当前长度
 	int listSize;	 // 当前分配得存储容量
 }SqList;
@@ -35,7 +35,7 @@ SqList L 建立的是结构体变量， 这时用L.length
 void initList(SqList *L)
 {
 	L->listSize = LIST_ININ_SIZE;  // 初始化线性表的总长度为我们事先定义好的LIST_INIT_SIZE,也就是100
-	L->base = (ElemType*)malloc(L->listSize * sizeof(ElemType));  //为线性表申请内存空间,大小为线性表的总长度 乘以 每一个元素所占空间的大小
+	L->data = (ElemType*)malloc(L->listSize * sizeof(ElemType));  //为线性表申请内存空间,大小为线性表的总长度 乘以 每一个元素所占空间的大小
 	L->length = 0;  // 创建线性表的时候没有数据，长度默认为0
 
 }
@@ -75,8 +75,8 @@ Status listInsert(SqList *L, int i, ElemType e)
 	}
 	if (L->length >= L->listSize)  //当前存储空间已满，增加分配
 	{
-		L->base = (ElemType *)realloc(L->base, (L->listSize + LIST_INCREASMENT) * sizeof(ElemType));
-		if (!L->base) {
+		L->data = (ElemType *)realloc(L->data, (L->listSize + LIST_INCREASMENT) * sizeof(ElemType));
+		if (!L->data) {
 			return OVERFLOW;//存储分配失败
 		}
 		L->listSize += LIST_INCREASMENT;//增加存储容量
@@ -84,9 +84,9 @@ Status listInsert(SqList *L, int i, ElemType e)
 
 	//插入操作，需要将从插入位置开始的后续元素，逐个后移
 	for (int j = L->length - 1; j >= i - 1; j--) {
-		L->base[j + 1] = L->base[j];
+		L->data[j + 1] = L->data[j];
 	}
-	L->base[i - 1] = e;//插入e
+	L->data[i - 1] = e;//插入e
 	L->length++;//表长增1
 	return OK;
 	
@@ -108,12 +108,12 @@ Status listDelete(SqList *L, int i, ElemType *e)
 		return ERROR;
 	}
 
-	*e = L->base[i - 1];  // 这里把传进来的e地址所对应的值改变了
+	*e = L->data[i - 1];  // 这里把传进来的e地址所对应的值改变了
 	if (i < L->length)
 	{
 		for (k = i; k < L->length; k++)
 		{
-			L->base[k - 1] = L->base[k];
+			L->data[k - 1] = L->data[k];
 		}
 	}
 	L->length = L->length - 1;
@@ -129,7 +129,7 @@ ElemType getElem(SqList *L, int i)
 	{
 		return ERROR;
 	}
-	return L->base[i - 1];  // 直接查找值并返回
+	return L->data[i - 1];  // 直接查找值并返回
 }
 
 
@@ -142,7 +142,7 @@ ElemType priorElem(SqList *L, int i)
 	}
 	if (i != 1)
 	{
-		return L->base[i - 2];
+		return L->data[i - 2];
 	}
 	else
 	{
@@ -161,7 +161,7 @@ ElemType nextElem(SqList *L, int i)
 	}
 	if (i != L->length)
 	{
-		return L->base[i];
+		return L->data[i];
 	}
 	else
 	{
@@ -192,9 +192,9 @@ Status destoryList(SqList *L)
 {
 	clearList(L);    // 先清空顺序表
 	L->listSize = 0; // 把顺序表的总长度归零
-	free(L->base);   // 释放内存空间
+	free(L->data);   // 释放内存空间
 
-	if (L->base == NULL && L->length == 0 && L->listSize == 0)
+	if (L->data == NULL && L->length == 0 && L->listSize == 0)
 	{
 		return TRUE;
 	}
@@ -213,7 +213,7 @@ void printList(SqList *L)
 
 	for (; i < L->length; i++)
 	{
-		printf("%d\n", L->base[i]);
+		printf("%d\n", L->data[i]);
 	}
 
 	printf("打印完毕.\n");
@@ -226,7 +226,7 @@ int localElem(SqList *L, int e)
 	int i;
 	for (i = 0; i < L->length; i++)
 	{
-		if (L->base[i] == e)
+		if (L->data[i] == e)
 		{
 			return i + 1;
 		}
