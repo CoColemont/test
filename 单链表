@@ -320,10 +320,10 @@ int main()
 	ElemType e;
 	int i;
 
-	InitList(L);
-
-    list = LinkedListCreatW(L);
+	//-------> 这里注意：后面的函数如（PrintList(list)）,传入的参数是list，而不是L，list 才是建立的链表
+    	list = LinkedListCreatW(L);
 	PrintList(list);
+	 
 
 	// list = LinkedListCreatH(L);
 	//a = LinkedListInsert(list, 6, 6);
@@ -345,9 +345,9 @@ int main()
 	i = LocalElem(list, &value);
 	printf("查找结点值value所在的位置i = %d", i);*/
 
-	ListDelete(list, 2, &e);
+	/*ListDelete(list, 2, &e);
 	printf("删除第2个位置的值为%d:\n", e);
-	PrintList(list);
+	PrintList(list);*/
 
 	system("pause");
 }
